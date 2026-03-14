@@ -5,9 +5,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowRight, Trash2 } from "lucide-react";
 import Image from "next/image";
 
-import { CartItemsType } from "@/types";
+import { CartItemsType, ShippingFormInputs } from "@/types";
 import ShippingForm from "@/components/ShippingForm";
 import PaymentForm from "@/components/PaymentForm";
+import useCartStore from "@/stores/cartStore";
 
 const steps = [
 	{
@@ -84,9 +85,11 @@ const cartItems: CartItemsType = [
 const CartPage = () => {
 	const searchParams = useSearchParams();
 	const router = useRouter();
-	const [shippingForm, setShippingForm] = useState(null);
+	const [shippingForm, setShippingForm] = useState<ShippingFormInputs>();
 
 	const activeStep = parseInt(searchParams.get("step") || "1");
+
+	const { cart, removeFromCart } = useCartStore();
 
 	return (
 		<div className="flex flex-col gap-8 items-center justify-center mt-12">
@@ -119,9 +122,12 @@ const CartPage = () => {
 				{/* CART ITEMS */}
 				<div className="w-full lg:w-7/12 shadow-lg border-1 border-gray-100 p-8 rounded-lg flex flex-col gap-8">
 					{activeStep === 1 ? (
-						cartItems.map((item) => (
+						cart.map((item) => (
 							// Cart item
-							<div className="flex items-center justify-between" key={item.id}>
+							<div
+								className="flex items-center justify-between"
+								key={item.id + item.selectedSize + item.selectedColor}
+							>
 								{/* Image & Details */}
 								<div className="flex gap-8">
 									{/* Image */}
@@ -153,7 +159,10 @@ const CartPage = () => {
 								</div>
 
 								{/* Delete */}
-								<button className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 transition-all duration-300 text-red-400 flex items-center justify-center cursor-pointer">
+								<button
+									onClick={() => removeFromCart(item)}
+									className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 transition-all duration-300 text-red-400 flex items-center justify-center cursor-pointer"
+								>
 									<Trash2 className="w-3 h-3" />
 								</button>
 							</div>
@@ -178,7 +187,7 @@ const CartPage = () => {
 							<p className="text-gray-500">Subtotal</p>
 							<p className="font-medium">
 								$
-								{cartItems
+								{cart
 									.reduce((acc, item) => acc + item.price * item.quantity, 0)
 									.toFixed(2)}
 							</p>
@@ -202,7 +211,7 @@ const CartPage = () => {
 							<p className="text-gray-800 font-semibold">Total</p>
 							<p className="font-medium">
 								$
-								{cartItems
+								{cart
 									.reduce((acc, item) => acc + item.price * item.quantity, 0)
 									.toFixed(2)}
 							</p>
