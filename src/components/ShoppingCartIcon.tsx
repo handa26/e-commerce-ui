@@ -6,9 +6,11 @@ import { ShoppingCart } from "lucide-react";
 import useCartStore from "@/stores/cartStore";
 
 const ShoppingCartIcon = () => {
-	const { cart } = useCartStore();
+	const { cart, hasHydrated } = useCartStore();
 
 	const cartQty = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+	if (!hasHydrated) return null;
 
 	return (
 		<Link href="/cart" className="relative">
